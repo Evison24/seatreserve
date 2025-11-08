@@ -1,0 +1,61 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { getSeats } from '@/features/events/api';
+import { Seat } from '@/features/events/types';
+import { Button, Typography, Container } from '@/components/ui';
+import { useRouter } from 'next/navigation';
+
+export default function EventSeatsPage({ id }: { id: string }) {
+  const [seats, setSeats] = useState<Seat[]>([]);
+  const [selected, setSelected] = useState<Seat[]>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    getSeats(id).then(setSeats);
+  }, [id]);
+
+  function toggleSeat(seat: Seat) {
+    if (!seat.isAvailable) return;
+    setSelected((prev) =>
+      prev.some((s) => s.id === seat.id)
+        ? prev.filter((s) => s.id !== seat.id)
+        : [...prev, seat]
+    );
+  }
+
+  return (
+    <Container className="py-10">
+      <Typography variant="h1">Select Your Seats</Typography>
+      <div className="grid grid-cols-10 gap-2 mt-6">
+        {seats.map((seat) => (
+          <button
+            key={seat.id}
+            onClick={() => toggleSeat(seat)}
+            disabled={!seat.isAvailable}
+            className={`p-2 rounded-md ${
+              !seat.isAvailable
+                ? 'bg-gray-300 cursor-not-allowed'
+                : selected.some((s) => s.id === seat.id)
+                ? 'bg-green-500 text-white'
+                : 'bg-blue-100 hover:bg-blue-200'
+            }`}
+          >
+            {seat.row}-{seat.number}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <Button
+          disabled={!selected.length}
+          onClick={() =>
+            router.push(`/booking/confirm?seats=${selected.map((s) => s.id).join(',')}`)
+          }
+        >
+          Continue ({selected.length})
+        </Button>
+      </div>
+    </Container>
+  );
+}
