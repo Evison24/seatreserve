@@ -1,6 +1,8 @@
-import EventSeatsPage from './seats-page';
+import { getSeats } from '@/features/events/api';
+import SeatsClient from './SeatsClient';
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <EventSeatsPage id={id} />;
+  const seats = await getSeats(id);
+  return <SeatsClient id={id} initialSeats={seats} />;
 }

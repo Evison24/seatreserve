@@ -1,19 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getSeats } from '@/features/events/api';
+import { useState } from 'react';
 import { Seat } from '@/features/events/types';
-import { Button, Typography, Container } from '@/components/ui';
+import { Container, Typography, Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
 
-export default function EventSeatsPage({ id }: { id: string }) {
-  const [seats, setSeats] = useState<Seat[]>([]);
+interface Props {
+  id: string;
+  initialSeats: Seat[];
+}
+
+export default function SeatsClient({ id, initialSeats }: Props) {
+  const [seats, setSeats] = useState<Seat[]>(initialSeats);
   const [selected, setSelected] = useState<Seat[]>([]);
   const router = useRouter();
-
-  useEffect(() => {
-    getSeats(id).then(setSeats);
-  }, [id]);
 
   function toggleSeat(seat: Seat) {
     if (!seat.isAvailable) return;
@@ -23,10 +23,10 @@ export default function EventSeatsPage({ id }: { id: string }) {
         : [...prev, seat]
     );
   }
-
   return (
     <Container className="py-10">
       <Typography variant="h1">Select Your Seats</Typography>
+
       <div className="grid grid-cols-10 gap-2 mt-6">
         {seats.map((seat) => (
           <button

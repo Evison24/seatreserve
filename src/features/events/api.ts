@@ -8,8 +8,7 @@ export async function getEvents(): Promise<Event[]> {
 }
 
 export async function getSeats(eventId: string): Promise<Seat[]> {
-  // simulate delay
-  await new Promise((r) => setTimeout(r, 300));
+  await new Promise((r) => setTimeout(r, 3000));
   return Array.from({ length: 40 }, (_, i) => ({
     id: `${eventId}-seat-${i + 1}`,
     row: Math.floor(i / 10) + 1,
@@ -17,3 +16,7 @@ export async function getSeats(eventId: string): Promise<Seat[]> {
     isAvailable: Math.random() > 0.25, // 75% available
   }));
 }
+
+// export async function getSeats(eventId: string): Promise<Seat[]> {
+//   throw new Error('Network request failed');
+// }
