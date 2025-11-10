@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Seat } from '@/features/events/types';
 import { Container, Typography, Button } from '@/components/ui';
 import { useRouter } from 'next/navigation';
+import { useBooking } from '@/context/BookingContext';
 
 interface Props {
   id: string;
@@ -14,6 +15,7 @@ export default function SeatsClient({ id, initialSeats }: Props) {
   const [seats, setSeats] = useState<Seat[]>(initialSeats);
   const [selected, setSelected] = useState<Seat[]>([]);
   const router = useRouter();
+  const { setSelectedSeats } = useBooking();
 
   function toggleSeat(seat: Seat) {
     if (!seat.isAvailable) return;
@@ -49,9 +51,10 @@ export default function SeatsClient({ id, initialSeats }: Props) {
       <div className="mt-8">
         <Button
           disabled={!selected.length}
-          onClick={() =>
-            router.push(`/booking/confirm?seats=${selected.map((s) => s.id).join(',')}`)
-          }
+          onClick={() => {
+            setSelectedSeats(selected);
+            router.push('/booking/confirm');
+          }}
         >
           Continue ({selected.length})
         </Button>
