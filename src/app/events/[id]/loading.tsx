@@ -1,4 +1,4 @@
-import { Container, Typography, Card } from '@/components/ui';
+import { Container, Typography } from '@/components/ui';
 
 export default function Loading() {
   return (

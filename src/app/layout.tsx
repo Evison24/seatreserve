@@ -1,7 +1,7 @@
 import { Navbar } from '@/components/layout/Navbar';
 import './globals.css';
 import { ReactNode } from 'react';
-import { BookingProvider } from '@/context/BookingContext';
+import ClientProviders from '@/components/providers/ClientProviders';
 
 export const metadata = {
   title: 'SeatReserve',
@@ -12,10 +12,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900">
-        <BookingProvider>
+        <ClientProviders>
           <Navbar />
           <main>{children}</main>
-        </BookingProvider>
+        </ClientProviders>
       </body>
     </html>
   );
