@@ -2,11 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import clsx from 'clsx';
-import { Container } from '@/components/ui';
+import { Container, Button } from '@/components/ui';
 
 export function Navbar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
 
   const navLinks = [
     { href: '/events', label: 'Events' },
@@ -34,6 +36,30 @@ export function Navbar() {
             </Link>
           ))}
         </nav>
+
+        <div className="flex items-center gap-3">
+          {status === 'loading' ? (
+            <p className="text-sm text-gray-500">Loading...</p>
+          ) : session ? (
+            <>
+              <p className="text-sm text-gray-800">
+                {session.user?.name || session.user?.email}
+              </p>
+              <Button variant="ghost" onClick={() => signOut({ callbackUrl: '/' })}>
+                Sign out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/signin">
+                <Button variant="secondary">Sign In</Button>
+              </Link>
+              <Link href="/auth/register">
+                <Button>Register</Button>
+              </Link>
+            </>
+          )}
+        </div>
       </Container>
     </header>
   );
