@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+// import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from 'lib/auth';
 import { db } from '@/db/drizzle';
 import { seats } from '@/db/schema';
 import { updateSeatSchema } from 'lib/validators';

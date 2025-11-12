@@ -20,7 +20,6 @@ export async function POST() {
         venue: 'City Hall',
         startsAt: starts,
         endsAt: ends,
-        // dev-only: fake user id
         createdByUserId: crypto.randomUUID(),
       })
       .returning();
@@ -42,11 +41,9 @@ export async function POST() {
       { seededEventId: event.id, seats: values.length },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('POST /api/dev/seed error:', err);
-    return NextResponse.json(
-      { error: err?.message ?? 'Internal Server Error' },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

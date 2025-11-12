@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { desc, ilike } from 'drizzle-orm';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from 'lib/auth';
 import { db } from '@/db/drizzle';
 import { events } from '@/db/schema';
 import { createEventSchema } from 'lib/validators';
@@ -28,12 +28,10 @@ export async function GET(req: NextRequest) {
     const nextCursor = hasMore ? String(Number(cursor ?? 0) + limit) : null;
 
     return NextResponse.json({ data, nextCursor });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('GET /api/events error:', err);
-    return NextResponse.json(
-      { error: err?.message ?? 'Internal Server Error' },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -71,11 +69,17 @@ export async function POST(req: NextRequest) {
       .returning();
 
     return NextResponse.json({ data: created }, { status: 201 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('POST /api/events error:', err);
-    return NextResponse.json(
-      { error: err?.message ?? 'Internal Server Error' },
-      { status: 500 }
-    );
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+// catch (err: any) {
+//   console.error('POST /api/events error:', err);
+//   return NextResponse.json(
+//     { error: err?.message ?? 'Internal Server Error' },
+//     { status: 500 }
+//   );
+// }

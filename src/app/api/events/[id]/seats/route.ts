@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from 'lib/auth';
 import { db } from '@/db/drizzle';
 import { seats } from '@/db/schema';
 import { createSeatSchema } from 'lib/validators';
 import { eq } from 'drizzle-orm';
+import type { z } from 'zod';
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  // Ensure event exists (cheap existence check via count)
   const event = await db.query.events.findFirst({
     where: (t, { eq }) => eq(t.id, params.id),
   });
@@ -17,7 +17,6 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json({ data });
 }
 
-// Accepts single seat object or an array for bulk create
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id)
@@ -31,23 +30,25 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const json = await req.json();
   const items = Array.isArray(json) ? json : [json];
 
-  const results = items.map((p) => createSeatSchema.safeParse(p));
-  const hasError = results.some((r) => !r.success);
-  if (hasError) {
-    return NextResponse.json(
-      { error: results.map((r) => (r.success ? null : r.error.flatten())) },
-      { status: 400 }
-    );
+  type SeatPayload = z.infer<typeof createSeatSchema>;
+  const parsed = items.map((item) => createSeatSchema.safeParse(item));
+
+  const errors = parsed
+    .filter((r) => !r.success)
+    .map((r) => (r.success ? null : r.error.flatten()));
+
+  if (errors.some((e) => e !== null)) {
+    return NextResponse.json({ error: errors }, { status: 400 });
   }
 
-  const values = results
-    .map((r) => (r as any).data)
-    .map((p: any) => ({
+  const values = parsed
+    .filter((r): r is z.ZodSafeParseSuccess<SeatPayload> => r.success)
+    .map((r) => ({
       eventId: params.id,
-      row: p.row,
-      number: p.number,
-      priceCents: p.priceCents,
-      isAvailable: p.isAvailable ?? true,
+      row: r.data.row,
+      number: r.data.number,
+      priceCents: r.data.priceCents,
+      isAvailable: r.data.isAvailable ?? true,
     }));
 
   const inserted = await db.insert(seats).values(values).returning();
