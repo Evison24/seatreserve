@@ -1,13 +1,13 @@
-export interface Event {
+export type Event = {
   id: string;
   title: string;
   date: string;
-  location: string;
-}
+  location: string; // venue
+};
 
-export interface Seat {
+export type Seat = {
   id: string;
-  row: number;
+  row: string;
   number: number;
   isAvailable: boolean;
-}
+};

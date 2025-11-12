@@ -1,4 +1,4 @@
-import { getSeats } from '@/features/events/api';
+import { getSeats } from '@/features/events/client';
 import SeatsClient from './SeatsClient';
 
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
