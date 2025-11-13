@@ -6,16 +6,28 @@ import { db } from '@/db/drizzle';
 import { events } from '@/db/schema';
 import { updateEventSchema } from 'lib/validators';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const eventId = id;
+
   const row = await db.query.events.findFirst({
-    where: (t, { eq }) => eq(t.id, params.id),
+    where: (t, { eq }) => eq(t.id, eventId),
     with: { seats: true },
   });
   if (!row) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ data: row });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const eventId = id;
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.id)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -45,19 +57,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(patch.endsAt && { endsAt: new Date(patch.endsAt) }),
       updatedAt: new Date(),
     })
-    .where(eq(events.id, params.id))
+    .where(eq(events.id, eventId))
     .returning();
 
   if (!updated) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ data: updated });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const eventId = id;
   const session = await getServerSession(authOptions);
   if (!session?.user?.id)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [deleted] = await db.delete(events).where(eq(events.id, params.id)).returning();
+  const [deleted] = await db.delete(events).where(eq(events.id, eventId)).returning();
   if (!deleted) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

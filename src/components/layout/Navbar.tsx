@@ -12,7 +12,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: '/events', label: 'Events' },
-    { href: '/booking/confirm', label: 'My Bookings' },
+    { href: '/bookings', label: 'My Bookings' },
   ];
 
   return (
