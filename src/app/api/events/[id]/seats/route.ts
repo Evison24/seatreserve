@@ -7,23 +7,34 @@ import { createSeatSchema } from 'lib/validators';
 import { eq } from 'drizzle-orm';
 import type { z } from 'zod';
 
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const eventId = id;
   const event = await db.query.events.findFirst({
-    where: (t, { eq }) => eq(t.id, params.id),
+    where: (t, { eq }) => eq(t.id, id),
   });
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
-  const data = await db.select().from(seats).where(eq(seats.eventId, params.id));
+  const data = await db.select().from(seats).where(eq(seats.eventId, eventId));
   return NextResponse.json({ data });
 }
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const eventId = id;
+
   const session = await getServerSession(authOptions);
   if (!session?.user?.id)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const event = await db.query.events.findFirst({
-    where: (t, { eq }) => eq(t.id, params.id),
+    where: (t, { eq }) => eq(t.id, eventId),
   });
   if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 });
 
@@ -44,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const values = parsed
     .filter((r): r is z.ZodSafeParseSuccess<SeatPayload> => r.success)
     .map((r) => ({
-      eventId: params.id,
+      eventId: eventId,
       row: r.data.row,
       number: r.data.number,
       priceCents: r.data.priceCents,
