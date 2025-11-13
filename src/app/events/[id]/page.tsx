@@ -1,8 +1,13 @@
 import { getEventWithSeats } from '@/features/events/server';
 
-export default async function EventSeatsPage(props: PageProps<'/events/[id]'>) {
-  const { id } = await props.params;
+export default async function EventSeatsPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const eventId = id;
+
   const result = await getEventWithSeats(eventId);
   if (!result) return <div className="p-6">Event not found.</div>;
 
