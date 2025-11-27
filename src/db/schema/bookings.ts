@@ -5,6 +5,7 @@ import {
   uuid,
   index,
   uniqueIndex,
+  text,
 } from 'drizzle-orm/pg-core';
 import { events } from './events';
 import { seats } from './seats';
@@ -20,7 +21,7 @@ export const bookings = pgTable(
     seatId: uuid('seat_id')
       .notNull()
       .references(() => seats.id, { onDelete: 'cascade' }),
-    userId: uuid('user_id')
+    userId: text('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     status: varchar('status', { length: 16 })

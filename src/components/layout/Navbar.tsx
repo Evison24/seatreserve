@@ -1,66 +1,64 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
-import clsx from 'clsx';
-import { Container, Button } from '@/components/ui';
+import { getServerSession } from 'next-auth';
+import { authOptions } from 'lib/auth';
 
-export function Navbar() {
-  const pathname = usePathname();
-  const { data: session, status } = useSession();
-
-  const navLinks = [
-    { href: '/events', label: 'Events' },
-    { href: '/bookings', label: 'My Bookings' },
-  ];
+export async function Navbar() {
+  const session = await getServerSession(authOptions);
+  const user = session?.user;
+  const role = user?.role ?? 'USER';
 
   return (
-    <header className="border-b bg-white shadow-sm">
-      <Container className="flex items-center justify-between h-16">
-        <Link href="/" className="font-semibold text-lg text-blue-600">
-          SeatReserve
-        </Link>
+    <header className="border-b bg-white">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-lg font-semibold tracking-tight">
+            SeatReserve
+          </Link>
 
-        <nav className="flex gap-6">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={clsx(
-                'hover:text-blue-600 transition-colors',
-                pathname.startsWith(link.href) && 'text-blue-600 font-semibold'
-              )}
-            >
-              {link.label}
+          <nav className="hidden items-center gap-4 text-sm text-grey-600 sm:flex">
+            <Link href="/events" className="hover:text-black">
+              Events
             </Link>
-          ))}
-        </nav>
+            {user && (
+              <Link href="/bookings" className="hover:text-black">
+                My bookings
+              </Link>
+            )}
+            {role === 'ADMIN' && (
+              <Link href="/admin/events" className="hover:text-black">
+                Admin
+              </Link>
+            )}
+          </nav>
+        </div>
 
-        <div className="flex items-center gap-3">
-          {status === 'loading' ? (
-            <p className="text-sm text-gray-500">Loading...</p>
-          ) : session ? (
+        <div className="flex items-center gap-3 text-sm">
+          {user ? (
             <>
-              <p className="text-sm text-gray-800">
-                {session.user?.name || session.user?.email}
-              </p>
-              <Button variant="ghost" onClick={() => signOut({ callbackUrl: '/' })}>
-                Sign out
-              </Button>
+              <span className="hidden text-grey-600 sm:inline">
+                {user.name ?? 'Account'}
+              </span>
+              <form action="/api/auth/signout" method="post">
+                <button className="rounded-full border border-grey-300 px-4 py-1.5 hover:bg-grey-50">
+                  Sign out
+                </button>
+              </form>
             </>
           ) : (
             <>
-              <Link href="/auth/signin">
-                <Button variant="secondary">Sign In</Button>
+              <Link href="/auth/signin" className="text-grey-600 hover:text-black">
+                Log in
               </Link>
-              <Link href="/auth/register">
-                <Button>Register</Button>
+              <Link
+                href="/auth/register"
+                className="rounded-full bg-black px-4 py-1.5 font-medium text-white hover:bg-black/90"
+              >
+                Get started
               </Link>
             </>
           )}
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

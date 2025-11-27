@@ -8,7 +8,7 @@ import Link from 'next/link';
 export default async function BookingsPage() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    redirect('/auth/login');
+    redirect('/auth/signin');
   }
 
   const rows: BookingRow[] = await getMyBookings(session.user.id);

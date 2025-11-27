@@ -13,7 +13,7 @@ async function createEventAction(formData: FormData) {
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    redirect('/auth/login');
+    redirect('/auth/signin');
   }
 
   const title = formData.get('title')?.toString() ?? '';

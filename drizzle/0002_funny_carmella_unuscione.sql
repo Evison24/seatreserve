@@ -1,0 +1,1 @@
+ALTER TABLE "bookings" ALTER COLUMN "user_id" SET DATA TYPE text;

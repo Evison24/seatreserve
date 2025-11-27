@@ -1,16 +1,21 @@
 import { DefaultSession } from 'next-auth';
 
 declare module 'next-auth' {
+  interface User {
+    id: string;
+    role: 'USER' | 'ADMIN';
+  }
+
   interface Session {
     user: {
       id: string;
+      role: 'USER' | 'ADMIN';
     } & DefaultSession['user'];
   }
 }
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    // NextAuth already carries the user id in `sub`
-    sub?: string;
+    role?: 'USER' | 'ADMIN';
   }
 }
