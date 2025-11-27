@@ -14,7 +14,7 @@ export async function POST(
 
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
-    return NextResponse.redirect(new URL('/auth/login', req.url));
+    return NextResponse.redirect(new URL('/auth/signin', req.url));
   }
 
   try {

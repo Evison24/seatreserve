@@ -2,18 +2,23 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Button, Input, Container, Typography } from '@/components/ui';
+
+type Status = 'idle' | 'creating' | 'signingIn';
 
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState('');
+
+  const isBusy = status !== 'idle';
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setStatus('creating');
 
     try {
       const res = await fetch('/api/register', {
@@ -28,16 +33,28 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      alert('Registration successful! Redirecting...');
-      router.push('/auth/signin');
+      setStatus('signingIn');
+
+      const result = await signIn('credentials', {
+        redirect: false,
+        email: form.email,
+        password: form.password,
+      });
+
+      if (result?.error) {
+        setError('Account created, but sign-in failed. Please log in.');
+        setStatus('idle');
+        return;
+      }
+
+      router.push('/');
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError(String(err));
       }
-    } finally {
-      setLoading(false);
+      setStatus('idle');
     }
   }
 
@@ -48,14 +65,18 @@ export default function RegisterPage() {
   return (
     <Container className="py-10 flex flex-col items-center">
       <Typography variant="h1">Create an Account</Typography>
+      <p className="mt-2 text-sm text-gray-500">
+        Book seats faster and keep all your reservations in one place.
+      </p>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6 w-80">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-6 w-full max-w-xs">
         <Input
           name="name"
           placeholder="Full Name"
           value={form.name}
           onChange={handleChange}
           required
+          disabled={isBusy}
         />
         <Input
           name="email"
@@ -64,6 +85,7 @@ export default function RegisterPage() {
           value={form.email}
           onChange={handleChange}
           required
+          disabled={isBusy}
         />
         <Input
           name="password"
@@ -72,12 +94,24 @@ export default function RegisterPage() {
           value={form.password}
           onChange={handleChange}
           required
+          disabled={isBusy}
         />
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <Button type="submit" disabled={loading}>
-          {loading ? 'Creating account...' : 'Sign Up'}
+        <Button type="submit" disabled={isBusy}>
+          <div className="flex items-center justify-center gap-2.5">
+            {status === 'creating'
+              ? 'Creating your account'
+              : status === 'signingIn'
+              ? 'Signing you in'
+              : 'Sign Up'}
+            {status !== 'idle' && (
+              <span className="inline-flex h-5 w-5 items-center justify-center">
+                <span className="h-5 w-5 animate-spin rounded-full border  border-t-transparent" />
+              </span>
+            )}
+          </div>
         </Button>
       </form>
 

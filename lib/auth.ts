@@ -1,13 +1,22 @@
-import type { AuthOptions } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import bcrypt from 'bcryptjs';
+import { eq } from 'drizzle-orm';
+
 import { db } from '@/db/drizzle';
 import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
 
-export const authOptions: AuthOptions = {
-  adapter: DrizzleAdapter(db),
+export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: 'jwt',
+  },
+
+  secret: process.env.NEXTAUTH_SECRET,
+
+  pages: {
+    signIn: '/auth/signin',
+  },
+
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -16,30 +25,49 @@ export const authOptions: AuthOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        if (!credentials?.email || !credentials.password) {
+          return null;
+        }
+
         const [user] = await db
           .select()
           .from(users)
-          .where(eq(users.email, credentials?.email || ''));
-        if (!user) return null;
+          .where(eq(users.email, credentials.email));
 
-        const valid = await bcrypt.compare(credentials!.password, user.password || '');
-        if (!valid) return null;
+        if (!user) {
+          return null;
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+
+        if (!isValid) {
+          return null;
+        }
 
         return {
           id: user.id,
-          name: user.name ?? null,
-          email: user.email ?? null,
+          name: user.name,
+          email: user.email,
+          role: user.role,
         };
       },
     }),
   ],
-  pages: { signIn: '/auth/signin' },
-  session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET,
+
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role ?? 'USER';
+      }
+
+      return token;
+    },
+
     async session({ session, token }) {
-      if (session.user && token?.sub) {
-        session.user.id = token.sub; // typed via your next-auth.d.ts augmentation
+      if (session.user) {
+        session.user.id = token.id as string;
+        session.user.role = (token.role as 'USER' | 'ADMIN') ?? 'USER';
       }
       return session;
     },
