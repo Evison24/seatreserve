@@ -65,7 +65,7 @@ export default function RegisterPage() {
   return (
     <Container className="py-10 flex flex-col items-center">
       <Typography variant="h1">Create an Account</Typography>
-      <p className="mt-2 text-sm text-gray-500">
+      <p className="mt-2 text-sm text-gray/80">
         Book seats faster and keep all your reservations in one place.
       </p>
 

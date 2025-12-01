@@ -11,11 +11,11 @@ export interface TypographyProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const variantStyles: Record<Variant, string> = {
-  h1: 'text-3xl md:text-4xl font-bold text-gray-900',
-  h2: 'text-2xl md:text-3xl font-semibold text-gray-900',
-  h3: 'text-xl md:text-2xl font-semibold text-gray-900',
-  body: 'text-base text-gray-800',
-  caption: 'text-sm text-gray-500',
+  h1: 'text-3xl md:text-4xl font-bold text-foreground',
+  h2: 'text-2xl md:text-3xl font-semibold text-foreground',
+  h3: 'text-xl md:text-2xl font-semibold text-foreground',
+  body: 'text-base text-foreground/90',
+  caption: 'text-sm text-foreground/70',
 };
 
 export function Typography({
@@ -28,7 +28,14 @@ export function Typography({
   const Comp = Component as React.ElementType;
 
   return (
-    <Comp className={clsx(variantStyles[variant], className)} {...props}>
+    <Comp
+      className={clsx(
+        'transition-colors duration-200',
+        variantStyles[variant],
+        className
+      )}
+      {...props}
+    >
       {children}
     </Comp>
   );
