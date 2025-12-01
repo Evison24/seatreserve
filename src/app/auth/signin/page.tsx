@@ -61,7 +61,14 @@ export default function SignInPage() {
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         <Button type="submit" disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
+          <div className="flex items-center justify-center gap-2.5">
+            {loading ? 'Signing in' : 'Sign In'}
+            {loading && (
+              <span className="inline-flex h-5 w-5 items-center justify-center">
+                <span className="h-5 w-5 animate-spin rounded-full border  border-t-transparent" />
+              </span>
+            )}
+          </div>
         </Button>
       </form>
 

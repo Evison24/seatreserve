@@ -3,30 +3,37 @@
 import React from 'react';
 import clsx from 'clsx';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
 }
 
-export function Input({ label, error, className, ...props }: InputProps) {
+export function Input({ label, error, className, id, ...props }: InputProps) {
+  const inputId = id ?? (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
+
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1 text-sm">
       {label && (
-        <label htmlFor={props.id} className="text-sm font-medium text-gray-700">
+        <label
+          htmlFor={inputId}
+          className="text-xs font-medium text-slate-600 dark:text-slate-300"
+        >
           {label}
         </label>
       )}
+
       <input
+        id={inputId}
         className={clsx(
-          'w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm placeholder-gray-400',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
-          'disabled:bg-gray-100 disabled:cursor-not-allowed',
-          error && 'border-red-500 focus:ring-red-500',
+          'w-full rounded-xl border bg-white/80 px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 dark:bg-slate-900/70 dark:text-slate-50',
+          'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/40 dark:border-slate-700 dark:focus:border-primary',
+          error && 'border-red-500 focus:border-red-500 focus:ring-red-500/30',
           className
         )}
         {...props}
       />
-      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
 }
